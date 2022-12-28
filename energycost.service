@@ -1,0 +1,16 @@
+[Unit]
+Description=Energy cost daemon
+Requires=mosquitto.service
+After=mosquitto.service
+
+[Service]
+User=smartmeter
+ExecStart=/path/to/energycostd.py -L DEBUG
+ExecReload=kill -HUP $MAINPID
+#Restart=no
+# Current implementation crashes when InfluxDB is not running
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

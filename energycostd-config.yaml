@@ -1,0 +1,17 @@
+---
+influxdb:
+  host:     "localhost"
+  port:     8086
+  username: "username"
+  password: "password"
+  database: "energycost"
+mqtt:
+  host:     "localhost"
+  username: "energycostd"
+  password: "password"
+  topic:    "energycost"
+  smartmeter_e: "E1234567890123456"
+  smartmeter_g: "G1234567890123456"
+api:
+  apx:      "https://mijn.easyenergy.com/nl/api/tariff/getapxtariffs"
+  leba:     "https://mijn.easyenergy.com/nl/api/tariff/getlebatariffs"

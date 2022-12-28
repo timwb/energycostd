@@ -1,0 +1,90 @@
+---
+vat:
+  - {from: 2001-01-01, to: 2012-09-30, percentage: 0.19}
+  - {from: 2012-10-01, to: 2022-06-30, percentage: 0.21}
+  - {from: 2022-07-01, to: 2022-12-31, percentage: 0.09}
+  - {from: 2023-01-01, to: 2099-12-31, percentage: 0.21}
+
+tariffs:
+  electricity:
+    annual:
+      connection_fee: 
+        - {from: 2020-01-01, to: 2020-12-31, amount:   19.90}
+        - {from: 2021-01-01, to: 2021-12-31, amount:   21.35}
+        - {from: 2022-01-01, to: 2022-12-31, amount:   22.73}
+        - {from: 2023-01-01, to: 2023-12-31, amount:   34.05}
+      standing_charge_transportation:
+        - {from: 2020-01-01, to: 2023-12-31, amount:   18.00}
+      capacity_tariff:
+        - {from: 2020-01-01, to: 2020-12-31, amount:  132.48}
+        - {from: 2021-01-01, to: 2021-12-31, amount:  140.48}
+        - {from: 2022-01-01, to: 2022-12-31, amount:  149.60}
+        - {from: 2023-01-01, to: 2023-12-31, amount:  227.20}
+      meter_rent:
+        - {from: 2020-01-01, to: 2020-12-31, amount:   20.00}
+        - {from: 2021-01-01, to: 2021-12-31, amount:   16.73}
+        - {from: 2022-01-01, to: 2022-12-31, amount:   19.81}
+        - {from: 2023-01-01, to: 2023-12-31, amount:   13.77}
+      tax_reduction:
+        - {from: 2020-01-01, to: 2020-12-31, amount: -435.68}
+        - {from: 2021-01-01, to: 2021-12-31, amount: -461.62}
+        - {from: 2022-01-01, to: 2022-12-31, amount: -681.63}
+        - {from: 2022-01-01, to: 2022-12-31, amount: -493.27}
+      service_fee:
+        - {from: 2019-11-30, to: 2020-11-30, amount:   53.00}
+        - {from: 2020-12-01, to: 2021-11-30, amount:   53.00}
+        - {from: 2021-12-01, to: 2099-12-31, amount:   49.58677686}
+    usage:
+      tax:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 0.09770}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.09428}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 0.03679}
+        - {from: 2023-01-01, to: 2023-12-31, amount: 0.12599}
+      sustainability_and_transition_surcharge:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 0.0273}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.0300}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 0.0305}
+        - {from: 2023-01-01, to: 2099-12-31, amount: 0.0000}
+      apx_surcharge:
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.0000}
+      greenification_surcharge:
+        - {from: 2021-01-01, to: 2022-12-31, amount: 0.0005289256198347108}
+  gas:
+    annual:
+      connection_fee:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 28.17}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 30.00}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 32.33}
+        - {from: 2023-01-01, to: 2023-12-31, amount: 38.3250}
+      standing_charge:
+        - {from: 2020-01-01, to: 2023-12-31, amount: 18.00}
+      capacity_tariff:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 85.70}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 87.0918}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 82.96}
+        - {from: 2023-01-01, to: 2023-12-31, amount: 98.4396}
+      meter_rent:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 18.50}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 10.99}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 21.31}
+        - {from: 2023-01-01, to: 2023-12-31, amount: 16.34}
+      service_fee:
+        - {from: 2019-11-30, to: 2020-11-30, amount: 53.00}
+        - {from: 2020-12-01, to: 2021-11-30, amount: 53.00}
+        - {from: 2021-12-01, to: 2099-12-31, amount: 49.58677686}
+    usage:
+      tax:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 0.33307}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.34856}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 0.36322}
+        - {from: 2023-01-01, to: 2022-12-31, amount: 0.48980}
+      sustainability_and_transition_surcharge:
+        - {from: 2020-01-01, to: 2020-12-31, amount: 0.0775}
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.0851}
+        - {from: 2022-01-01, to: 2022-12-31, amount: 0.0865}
+        - {from: 2023-01-01, to: 2099-12-31, amount: 0.0000}
+      leba_surcharge:
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.0000}
+      regional_surcharge:
+        - {from: 2021-01-01, to: 2021-12-31, amount: 0.01815702479338843}
+        - {from: 2022-01-01, to: 2099-12-31, amount: 0.0000}
