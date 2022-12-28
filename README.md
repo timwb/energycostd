@@ -10,7 +10,7 @@ Energycostd fetches daily electricity and gas prices from Dutch dynamic rate ene
 This is useful if:
 
 - You automatically want to control devices based on prices with your home automation software of choice.
-- You want to have dynamic prices in Home Assistance. In this case you need to add a sensor of class 'monetary':
+- You want to have dynamic prices in Home Assistant. In this case you need to add a sensor of class 'monetary':
 
 ```yaml
 mqtt:
