@@ -451,9 +451,8 @@ def updateleba():
 def main():
   """
   TODO:
-  curl 'https://mijn.easyenergy.com/nl/api/tariff/getapxtariffslasttimestamp' -H 'User-Agent: Mozilla/5.0 (X11; Linux aarch64; rv:95.0) Gecko/20100101 Firefox/95.0' -H 'Accept: */*' -H 'Accept-Language: en-US,en;q=0.5' -H 'Accept-Encoding: gzip, deflate, br' -H 'X-Requested-With: XMLHttpRequest' -H 'DNT: 1' -H 'Connection: keep-alive' -H 'Referer: https://mijn.easyenergy.com/nl/tarieven' -H 'Cookie: __RequestVerificationToken_L25s0=R_yLDAwr51AOgw__owcgNj-mCC47yWYANVYosQO5m1G_0YyPjH9q99qj3-j3Uv67Bmk9wyFjj4RRbhHKduEka3fdqxEqqjZY6MQOUdMW7LM1; ASP.NET_SessionId=hnvkw5uywakk21xmsvoemnm1; gve.auth=1Y4kxslLTHFUPnukZOX6xkDlhS7131LtmOavTfa1EuTNoYepI1iuvSqyBLMwVL1etCTvWpPljLubcXjT068BhaR9szaRg_VaIvA52O3RkgZ6xUJY-vYHCazSvK2Fp-uSO8Nzv5-V0xjVlQWdbMqXl79fBxCyvRM6Mn-astXv3UiUVN8zXAhEu_uwO45_tlrDsDxn0VDzq8yDjCrGDP3qUj2ymskIzCE2JGnVst4PdSRlTbt0ToabYpY3okjU8kWd4b-1LqubnCar7SQo5xS3nKNd3_pDZJRnsnfVxhdLCp73T7uW0kF1DbR52sSA5rM8le2Z_eqIw_oAI6A4iG-kVQHre8Vbqa1gQNzbxYKWFIXNrt4q9mPWa_rT5uuOHxO1nr6tuPgT0Lex7BUxC2a8bOaYR3Hx6tSEpHmUxaUhQfk' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: same-origin'
-  
-  returns: "2021-12-19T23:00:00+01:00"
+  use curl 'https://mijn.easyenergy.com/nl/api/tariff/getapxtariffslasttimestamp'
+  it returns: "2021-12-19T23:00:00+01:00"
   """
   
   now = datetime.now()
