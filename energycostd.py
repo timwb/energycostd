@@ -10,19 +10,19 @@ tariffsfile = '/etc/energycost/energytariffs.yaml'
 hostname    = os.uname()[1]
 
 def reloadconfig(signum, frame):
-  logger.info('Received signal'+str(signum))
+  logger.info(f"Received signal {signum}")
   tariffs.updatetariffs()
 
 
 def shutdown(signum, frame):
-  logger.info('Received signal'+str(signum))
+  logger.info(f"Received signal {signum}")
 
 
 def on_connect(client, userdata, flags, rc):
-  logger.info("MQTT client connected with result code "+str(rc))
-  if tariffs is None or tariffs.apx is None: return
-  rates = tariffs.getcurrentrates()
-  publish_rates(e_rate=rates[0], g_rate=rates[1])
+  logger.info(f"MQTT client connected with result code {rc}")
+  if not all(tariffs, tariffs.apx):
+    rates = tariffs.getcurrentrates()
+    publish_rates(e_rate=rates[0], g_rate=rates[1])
   #client.subscribe('smartmeter/'+config['mqtt']['smartmeter']+'/going_rate')
 
 
@@ -68,70 +68,41 @@ class cl_tariffs:
     for entry in tariffs['tariffs']['electricity']['annual']:
       for entry2 in tariffs['tariffs']['electricity']['annual'][entry]:
         if entry2['from'] <= today and entry2['to'] >= today:
-          logger.debug("Selected period from {startdate} to {enddate} for annual electricity cost entry '{entry}': €{cost}".format(
-            startdate = entry2['from'].strftime("%Y-%m-%d"),
-            enddate = entry2['to'].strftime("%Y-%m-%d"),
-            entry = entry,
-            cost = round(entry2['amount'], 2)
-          ))
+          logger.debug(f"Selected period from {entry2['from']:%Y-%m-%d} to {entry2['to']:%Y-%m-%d} for annual electricity cost entry '{entry}': €{entry2['amount']:.2f}")
           self.tariffs['e_annual'] += entry2['amount']
           self.tariffs['e_daily'] = self.tariffs['e_annual'] / self.daysinyear
 
     for entry in tariffs['tariffs']['electricity']['usage']:
       for entry2 in tariffs['tariffs']['electricity']['usage'][entry]:
         if entry2['from'] <= today and entry2['to'] >= today:
-          logger.debug("Selected period from {startdate} to {enddate} for electricity usage cost entry '{entry}': {cost} ct/kWh".format(
-            startdate = entry2['from'].strftime("%Y-%m-%d"),
-            enddate = entry2['to'].strftime("%Y-%m-%d"),
-            entry = entry,
-            cost = round(entry2['amount']*100, 1)
-          ))
+          logger.debug(f"Selected period from {entry2['from']:%Y-%m-%d} to {entry2['to']:%Y-%m-%d} for electricity usage cost entry '{entry}': {entry2['amount']*100:.1f} ct/kWh")
           self.tariffs['e_tax_rate'] += entry2['amount']
 
     for entry in tariffs['tariffs']['gas']['annual']:
       for entry2 in tariffs['tariffs']['gas']['annual'][entry]:
         if entry2['from'] <= today and entry2['to'] >= today:
-          logger.debug("Selected period from {startdate} to {enddate} for annual gas cost entry '{entry}': €{cost}".format(
-            startdate = entry2['from'].strftime("%Y-%m-%d"),
-            enddate = entry2['to'].strftime("%Y-%m-%d"),
-            entry = entry,
-            cost = round(entry2['amount'], 2)
-          ))
+          logger.debug(f"Selected period from {entry2['from']:%Y-%m-%d} to {entry2['to']:%Y-%m-%d} for annual gas cost entry '{entry}': €{entry2['amount']:.2f}")
           self.tariffs['g_annual'] += entry2['amount']
           self.tariffs['g_daily'] = self.tariffs['g_annual'] / self.daysinyear
 
     for entry in tariffs['tariffs']['gas']['usage']:
       for entry2 in tariffs['tariffs']['gas']['usage'][entry]:
         if entry2['from'] <= today and entry2['to'] >= today:
-          logger.debug("Selected period from {startdate} to {enddate} for gas usage cost entry '{entry}': {cost} ct/m³".format(
-            startdate = entry2['from'].strftime("%Y-%m-%d"),
-            enddate = entry2['to'].strftime("%Y-%m-%d"),
-            entry = entry,
-            cost = round(entry2['amount']*100, 1)
-          ))
+          logger.debug(f"Selected period from {entry2['from']:%Y-%m-%d} to {entry2['to']:%Y-%m-%d} for gas usage cost entry '{entry}': {entry2['amount']*100:.1f} ct/m³")
           self.tariffs['g_tax_rate'] += entry2['amount']
 
-    for entry in self.tariffs:
-      self.tariffs[entry] += self.tariffs[entry] * vat
+    for entry in self.tariffs: self.tariffs[entry] += self.tariffs[entry] * vat
 
     self.tariffs['g_corr'] = 1.0
 
     if firstrun:
-      for entry in self.tariffs:
-        logger.debug("Calculated tariff: '{entry}' at €{new}".format(
-          entry=entry,
-          new=str(round(self.tariffs[entry], 6)),
-        ))
+      for entry in self.tariffs: logger.debug(f"Calculated tariff: '{entry}' at €{self.tariffs[entry]:.6f}")
     else:
       tariffschanged = False
       for entry in self.tariffs:
         if self.tariffs[entry] != oldtariffs[entry]:
           tariffschanged = True
-          logger.info("Tariff changed: {entry} updated from €{old} to €{new}".format(
-            entry=entry,
-            old=str(round(oldtariffs[entry], 6)),
-            new=str(round(self.tariffs[entry], 6)),
-          ))
+          logger.info(f"Tariff changed: {entry} updated from €{oldtariffs[entry]:.6f} to €{self.tariffs[entry]:.6f}")
       if tariffschanged:
         self.computefinaltariffs()
 
@@ -141,13 +112,11 @@ class cl_tariffs:
       15:00 CET/CEST.
       WARNING Currently assumes local time zone is CET/CEST
     """
-    today = date.today()
     self.baseapx =  makerequestee(config['api']['apx'])
     #self.baseapx =  makerequestez(usagetype='1')
 
     logger.debug("Electricity prices (inc VAT, ex. taxes):")
-    for elem in self.baseapx:
-      logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*100, 1))+" ct/kWh")
+    for elem in self.baseapx: logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*100:.1f} ct/kWh")
 
 
   def fetchleba(self):
@@ -155,13 +124,11 @@ class cl_tariffs:
       17:00 CET/CEST.
       WARNING Currently assumes local time zone is CET/CEST
     """
-    today = date.today()
     self.baseleba = makerequestee(config['api']['leba'])
     #self.baseleba = makerequestez(usagetype='3')
 
     logger.debug("Gas prices (inc VAT, ex taxes):")
-    for elem in self.baseleba:
-      logger.debug(elem['Timestamp'].astimezone().strftime("%d-%m-%Y, %H")+" €"+str(round(elem['TariffUsage'],2))+" /m³")
+    for elem in self.baseleba: logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} €{elem['TariffUsage']:.2f} /m³")
 
 
   def computefinaltariffs(self):
@@ -179,14 +146,11 @@ class cl_tariffs:
     for elem in self.leba:
       elem['TariffUsage'] += self.tariffs['g_tax_rate']
       
-    if debug:
+    if debug: 
       logger.debug("Electricity prices:")
-      for elem in self.apx:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*100, 1))+" ct/kWh")
-
+      for elem in self.apx:  logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*100:.1f} ct/kWh")
       logger.debug("Gas prices:")
-      for elem in self.leba:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%d-%m-%Y, %H")+" €"+str(round(elem['TariffUsage'],2))+" /m³")
+      for elem in self.leba: logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} €{elem['TariffUsage']:.2f} /m³")
 
     # Compute peaks and troughs only if there is a tomorrow in the data (there might not be at startup)
     if self.apx[-1]['Timestamp'].astimezone().date() == today: return
@@ -202,10 +166,7 @@ class cl_tariffs:
         avg += elem['TariffUsage']
         n += 1
     self.avgtomorrow = avg / n
-    logger.debug("Average electricity cost on {date}: {cost} ct/kWh".format(
-      date = (today+timedelta(days=1)).strftime("%Y-%m-%d"),
-      cost = round(self.avgtomorrow*100, 1)
-    ))
+    logger.debug(f"Average electricity cost on {today+timedelta(days=1):%Y-%m-%d}: {self.avgtomorrow*100:f.1} ct/kWh")
 
     self.apxsorted = sorted(self.apxtomorrow, key = lambda i: i['TariffUsage'])
 
@@ -244,50 +205,19 @@ class cl_tariffs:
 
     if debug:
       logger.debug("Electricity peaks:")
-      for elem in self.peaks:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*100, 1))+" ct/kWh")
-
+      for elem in self.peaks:     logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*100:.1f} ct/kWh")
       logger.debug("Electricity troughs:")
-      for elem in self.troughs:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*100, 1))+" ct/kWh")
-
+      for elem in self.troughs:   logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*100:.1f} ct/kWh")
       logger.debug("2-hour blocks")
-      for elem in self.apxdouble:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*50, 1))+" ct/kWh")
-
+      for elem in self.apxdouble: logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*50:.1f} ct/kWh")
       logger.debug("3-hour blocks")
-      for elem in self.apxtriple:
-        logger.debug(elem['Timestamp'].astimezone().strftime("%Y-%m-%d %H")+" "+str(round(elem['TariffUsage']*33.3, 1))+" ct/kWh")
-
-      logger.debug("Cheapest hour: {date} at {cost} ct/kWh".format(
-        date = self.apxsorted[0]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxsorted[0]['TariffUsage']*100, 1)
-      ))
-
-      logger.debug("Cheapest 2 hours: {date} at {cost} ct/kWh".format(
-        date = self.apxdoublesorted[0]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxdoublesorted[0]['TariffUsage']*50, 1)
-      ))
-
-      logger.debug("Cheapest 3 hours: {date} at {cost} ct/kWh".format(
-        date = self.apxtriplesorted[0]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxtriplesorted[0]['TariffUsage']*33.3, 1)
-      ))
-
-      logger.debug("Costliest hour: {date} at {cost} ct/kWh".format(
-        date = self.apxsorted[-1]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxsorted[-1]['TariffUsage']*100, 1)
-      ))
-
-      logger.debug("Costliest 2 hours: {date} at {cost} ct/kWh".format(
-        date = self.apxdoublesorted[-1]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxdoublesorted[-1]['TariffUsage']*50, 1)
-      ))
-
-      logger.debug("Costliest 3 hours: {date} at {cost} ct/kWh".format(
-        date = self.apxtriplesorted[-1]['Timestamp'].astimezone().strftime("%Y-%m-%d %H"),
-        cost = round(self.apxtriplesorted[-1]['TariffUsage']*33.3, 1)
-      ))
+      for elem in self.apxtriple: logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*33.3:.1f} ct/kWh")
+      logger.debug(f"Cheapest hour: {self.apxsorted[0]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxsorted[0]['TariffUsage']*100:.1f} ct/kWh")
+      logger.debug(f"Cheapest 2 hours: {self.apxdoublesorted[0]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxdoublesorted[0]['TariffUsage']*50:.1f} ct/kWh")
+      logger.debug(f"Cheapest 3 hours: {self.apxtriplesorted[0]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxtriplesorted[0]['TariffUsage']*33.3:.1f} ct/kWh")
+      logger.debug(f"Costliest hour: {self.apxsorted[-1]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxsorted[-1]['TariffUsage']*100:.1f} ct/kWh")
+      logger.debug(f"Costliest 2 hours: {self.apxdoublesorted[-1]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxdoublesorted[-1]['TariffUsage']*50:.1f} ct/kWh")
+      logger.debug(f"Costliest 3 hours: {self.apxtriplesorted[-1]['Timestamp'].astimezone():%Y-%m-%d %H} at {self.apxtriplesorted[-1]['TariffUsage']*33.3:.1f} ct/kWh")
 
 
   def getcurrentrates(self):
@@ -390,18 +320,18 @@ def makerequestez(usagetype='1'):
 def publish_rates(e_rate=None, g_rate=None):
   logger.debug("Publishing rates")
   if e_rate is not None:
-    mqtttopic = config['mqtt']['topic'] + '/' + config['mqtt']['smartmeter_e'] + '/going_rate'
+    mqtttopic = f"{config['mqtt']['topic']}/{config['mqtt']['smartmeter_e']}/going_rate"
     if not args.dryrun:
-      mqttclient.publish(mqtttopic, payload=str(round(e_rate,7)), retain=True)
+      mqttclient.publish(mqtttopic, payload=f"{e_rate:.7f}", retain=True)
   if g_rate is not None:
-    mqtttopic = config['mqtt']['topic'] + '/' + config['mqtt']['smartmeter_g'] + '/going_rate'
+    mqtttopic = f"{config['mqtt']['topic']}/{config['mqtt']['smartmeter_g']}/going_rate"
     if not args.dryrun:
-      mqttclient.publish(mqtttopic, payload=str(round(g_rate,7)), retain=True)
+      mqttclient.publish(mqtttopic, payload=f"{g_rate:.7f}", retain=True)
 
 
 def publish_opportunity(opportunity):
   logger.debug("Publishing opportunity: "+opportunity)
-  mqtttopic = config['mqtt']['topic'] + '/' + config['mqtt']['smartmeter_e'] + '/opportunity'
+  mqtttopic = f"{config['mqtt']['topic']}/{config['mqtt']['smartmeter_e']}/opportunity"
   if not args.dryrun:
     mqttclient.publish(mqtttopic, payload=opportunity)
 
@@ -495,8 +425,8 @@ if __name__ == '__main__':
   scriptname = os.path.splitext(os.path.basename(__file__))[0]
   parser = argparse.ArgumentParser()
   parser.add_argument('-d', '--dryrun',     help="Dry run (do not write to InfluxDB or MQTT)", action='store_true')
-  parser.add_argument('-c', '--config',     help="Path to config file (default: "+configfile+")")
-  parser.add_argument('-t', '--tariffs',    help="Path to tariffs file (default: "+tariffsfile+")")
+  parser.add_argument('-c', '--config',     help=f"Path to config file (default: {configfile})")
+  parser.add_argument('-t', '--tariffs',    help=f"Path to tariffs file (default: {tariffsfile})")
   parser.add_argument('-L', '--loglevel',   help="Logging level := { CRITICAL | ERROR | WARNING | INFO | DEBUG } (default: INFO)")
   args = parser.parse_args()
 
@@ -514,8 +444,8 @@ if __name__ == '__main__':
   elif args.loglevel == 'DEBUG':
     own_loglevel = logging.DEBUG
     debug = True
-  else:
-    print("Unknown Log level "+args.loglevel)
+  else: 
+    print(f"Unknown Log level {args.loglevel}")
     exit(1)
 
   logger.setLevel(own_loglevel)
@@ -526,7 +456,7 @@ if __name__ == '__main__':
   ch.setFormatter(formatter)
   logger.addHandler(ch)
 
-  logger.info("*** "+scriptname+" starting... ***")
+  logger.info(f"*** {scriptname} starting... ***")
 
   if not args.config is None:
     configfile = args.config
@@ -559,7 +489,7 @@ if __name__ == '__main__':
   signal.signal(signal.SIGTERM, shutdown)
   #signal.signal(signal.SIGTSTP, suspend)
 
-  logger.info("*** "+scriptname+" running. ***")
+  logger.info(f"*** {scriptname} running. ***")
   
   try:
     while True:
@@ -567,5 +497,5 @@ if __name__ == '__main__':
   except KeyboardInterrupt:
     pass
 
-  logger.info("*** "+scriptname+" stopping. ***")
+  logger.info(f"*** {scriptname} stopping. ***")
 #  stats.writestate()
