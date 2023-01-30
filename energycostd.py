@@ -158,7 +158,7 @@ class cl_tariffs:
         avg += elem['TariffUsage']
         n += 1
     self.avgtomorrow = avg / n
-    logger.debug(f"Average electricity cost on {today+timedelta(days=1):%Y-%m-%d}: {self.avgtomorrow*100:f.1} ct/kWh")
+    logger.debug(f"Average electricity cost on {today+timedelta(days=1):%Y-%m-%d}: {self.avgtomorrow*100:.1f} ct/kWh")
 
     self.apxsorted = sorted(self.apxtomorrow, key = lambda i: i['TariffUsage'])
 
