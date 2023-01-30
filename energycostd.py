@@ -20,17 +20,9 @@ def shutdown(signum, frame):
 
 def on_connect(client, userdata, flags, rc):
   logger.info(f"MQTT client connected with result code {rc}")
-  if not all(tariffs, tariffs.apx):
+  if not all([tariffs, tariffs.apx]):
     rates = tariffs.getcurrentrates()
     publish_rates(e_rate=rates[0], g_rate=rates[1])
-  #client.subscribe('smartmeter/'+config['mqtt']['smartmeter']+'/going_rate')
-
-
-#def on_subscribe(client, userdata, mid, granted_qos):
-  #client.message_callback_add('smartmeter/'+config['mqtt']['smartmeter']+'/going_rate', on_smartmeter_message)
-
-#def on_smartmeter_message(client, userdata, message):
-#  stats.update_going_rate(float(message.payload))
 
 
 class cl_tariffs:
@@ -145,8 +137,8 @@ class cl_tariffs:
 
     for elem in self.leba:
       elem['TariffUsage'] += self.tariffs['g_tax_rate']
-      
-    if debug: 
+
+    if debug:
       logger.debug("Electricity prices:")
       for elem in self.apx:  logger.debug(f"{elem['Timestamp'].astimezone():%Y-%m-%d %H} {elem['TariffUsage']*100:.1f} ct/kWh")
       logger.debug("Gas prices:")
@@ -154,7 +146,7 @@ class cl_tariffs:
 
     # Compute peaks and troughs only if there is a tomorrow in the data (there might not be at startup)
     if self.apx[-1]['Timestamp'].astimezone().date() == today: return
-    
+
     avg = 0.0
     n = 0
 
@@ -191,7 +183,7 @@ class cl_tariffs:
       i += 1
 
     self.apxdoublesorted = sorted(self.apxdouble, key = lambda i: i['TariffUsage'])
-    
+
     self.apxtriple = []
     i = 0
     for elem in self.apx:
@@ -248,7 +240,7 @@ def makerequestee(baseurl):
     endttimestamp = (startofday + timedelta(days=2)).astimezone(pytz.utc)
   else:
     endttimestamp = (startofday + timedelta(days=1)).astimezone(pytz.utc)
-  
+
   payload = {
     'startTimestamp': starttimestamp.strftime("%Y-%m-%dT%H:00:00.000Z"),
     'endTimestamp': endttimestamp.strftime("%Y-%m-%dT%H:00:00.000Z"),
@@ -284,7 +276,7 @@ def makerequestez(usagetype='1'):
     endttimestamp = (startofday + timedelta(days=2)).astimezone(pytz.utc)
   else:
     endttimestamp = (startofday + timedelta(days=1)).astimezone(pytz.utc)
-  
+
   payload = {
     'fromDate': starttimestamp.strftime("%Y-%m-%dT%H:00:00.000Z"),
     'tillDate': endttimestamp.strftime("%Y-%m-%dT%H:00:00.000Z"),
@@ -384,7 +376,7 @@ def main():
   use curl 'https://mijn.easyenergy.com/nl/api/tariff/getapxtariffslasttimestamp'
   it returns: "2021-12-19T23:00:00+01:00"
   """
-  
+
   now = datetime.now()
   rates = tariffs.getcurrentrates()
   publish_rates(e_rate=rates[0], g_rate=rates[1])
@@ -444,7 +436,7 @@ if __name__ == '__main__':
   elif args.loglevel == 'DEBUG':
     own_loglevel = logging.DEBUG
     debug = True
-  else: 
+  else:
     print(f"Unknown Log level {args.loglevel}")
     exit(1)
 
@@ -490,7 +482,7 @@ if __name__ == '__main__':
   #signal.signal(signal.SIGTSTP, suspend)
 
   logger.info(f"*** {scriptname} running. ***")
-  
+
   try:
     while True:
       main()
